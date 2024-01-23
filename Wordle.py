@@ -7,6 +7,8 @@ BE SURE TO UPDATE THIS COMMENT WHEN YOU WRITE THE CODE.
 
 import random
 
+import sys  # Import the sys module
+
 from WordleDictionary import FIVE_LETTER_WORDS
 from WordleGraphics import WordleGWindow, N_COLS, N_ROWS, CORRECT_COLOR, PRESENT_COLOR, MISSING_COLOR
 
@@ -14,16 +16,20 @@ from WordleGraphics import WordleGWindow, N_COLS, N_ROWS, CORRECT_COLOR, PRESENT
 # hidden_word = random.choice(FIVE_LETTER_WORDS)
 hidden_word = "agile"
 def wordle():
+    game_ended = False
+
     def enter_action(input):
-        nonlocal gw
+        nonlocal gw, game_ended
         input = input.lower()
         score = 0
 
+        if game_ended:
+            return
 
         # Check if the entered string is a legitimate English word
         if input.lower() in FIVE_LETTER_WORDS:
             # gw.show_message("Great! You guessed a legitimate English word.")
-
+            score = 0
             # Get the current row from WordleGWindow
             current_row = gw.get_current_row()
 
@@ -44,19 +50,26 @@ def wordle():
                 # Set the color for the square
                 gw.set_square_color(current_row, index, color)
 
-            if score == 5:
-                gw.show_message("Congrats!")
-            elif current_row == 5:
-                gw.show_message("The answer was " + hidden_word + ". Thanks for trying!")
-            else:
-                # Increment the current row for the next guess
-                gw.set_current_row(current_row + 1)
+            if score == N_COLS or current_row == N_ROWS - 1:
+                if score == N_COLS:
+                    gw.show_message("Congrats! You completed Wordle in {} tries.".format(current_row + 1))
+                else:
+                    gw.show_message("The answer was " + hidden_word + ". Thanks for trying!")
+
+                game_ended = True  # Set the game as ended
+            
+
+            # Increment the current row for the next guess
+            gw.set_current_row(current_row + 1)
 
         else:
             gw.show_message("Not in word list")
 
     gw = WordleGWindow()
     gw.add_enter_listener(enter_action)
+
+    # Wait for the user to close the window before exiting
+    gw.wait_for_close()
 
 # Startup code
 if __name__ == "__main__":
